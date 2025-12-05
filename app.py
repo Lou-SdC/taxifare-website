@@ -3,9 +3,6 @@ import folium
 from streamlit_folium import st_folium
 import requests
 
-long = -74.1
-lat = 40.6
-
 # Fond beige clair pour l'application
 st.markdown(
     """
@@ -34,7 +31,7 @@ def geocode_address(address):
         data = response.json()[0]
         return float(data["lat"]), float(data["lon"])
     else:
-        return long, lat
+        return None, None
 
 
 # Configuration de la page
@@ -55,13 +52,6 @@ pickup_datetime = st.datetime_input('Input the pickup date and time')
 
 #pickup and dropoff
 
-# coordinates initialisation
-pickup_longitude = -74.1
-pickup_latitude = 40.6
-dropoff_longitude = -74.0
-dropoff_latitude = 40.7
-
-
 # Make two columns
 col1, col2 = st.columns(2)
 
@@ -70,6 +60,12 @@ with col1:
     # adress field
     pickup_address = st.text_input("Choose an address (ex: 200 Eastern Pkwy, Brooklyn)", value="200 Eastern Pkwy, Brooklyn")
     pickup_latitude, pickup_longitude = geocode_address(pickup_address)
+
+    if pickup_latitude==None or pickup_longitude==None:
+        # coordinates initialisation
+        pickup_longitude = -74.1
+        pickup_latitude = 40.6
+        st.markdown('Address not found, please set up the coordinates manually')
 
     st.markdown('or set up the coordinates manually')
     pickup_longitude = st.number_input('Set your pickup longitude', value=pickup_longitude, min_value=-74.3, max_value=-73.7)
@@ -80,6 +76,12 @@ with col2:
     st.markdown('### 🚙 Choose your dropoff address or coordinates (blue car dot)')
     dropoff_address = st.text_input("Choose an address (ex: 89 E 42nd St, New York)", value="89 E 42nd St, New York")
     dropoff_latitude, dropoff_longitude = geocode_address(dropoff_address)
+
+    if dropoff_latitude==None or dropoff_longitude==None:
+        # coordinates initialisation
+        dropoff_longitude = -74.0
+        dropoff_latitude = 40.7
+        st.markdown('Address not found, please set up the coordinates manually')
 
     st.markdown('or set up the coordinates manually')
     dropoff_longitude = st.number_input('Set your dropoff longitude', value=dropoff_longitude, min_value=-74.3, max_value=-73.7)
