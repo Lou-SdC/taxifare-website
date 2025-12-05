@@ -1,11 +1,10 @@
 import streamlit as st
-import pandas as pd
-
-import pydeck as pdk
-
+import folium
+from streamlit_folium import st_folium
 import requests
+import json
 
-st.title('TaxiFareModel Lou-SdC')
+st.title('TaxiFare Lou-SdC')
 
 st.markdown('''This app gives you a prediction of the fare for a cab ride between a pickup point
             and a dropoff point at a given date and time and for a given number of passenger''')
@@ -20,75 +19,47 @@ pickup_datetime = st.datetime_input('Input the pickup date and time')
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('### 🔴 Choose your pickup coordinates (red dot)')
+    st.markdown('### 🚗 Choose your pickup coordinates (red car dot)')
     pickup_longitude = st.number_input('Set your pickup longitude', value=-74.0, min_value=-74.3, max_value=-73.7)
     pickup_latitude = st.number_input('Set your pickup latitude', value=40.6, min_value=40.5, max_value=40.9)
 
 with col2:
-    st.markdown('### 🔵 Choose your dropoff coordinates (blue dot)')
+    st.markdown('### 🚙 Choose your dropoff coordinates (blue car dot)')
     dropoff_longitude = st.number_input('Set your dropoff longitude', value=-73.9, min_value=-74.3, max_value=-73.7)
     dropoff_latitude = st.number_input('Set your dropoff latitude', value=40.7, min_value=40.5, max_value=40.9)
 
-## Create the point with lat and long values
-pickup = [pickup_longitude, pickup_latitude]
-dropoff = [dropoff_longitude, dropoff_latitude]
-
-# add the points
-pickup_point = {"coordinates": pickup, "color": [255, 0, 0]}
-dropoff_point = {"coordinates": dropoff, "color": [0, 0, 255]}
-
-# Creating the layers for each point
-layer1 = pdk.Layer(
-    "ScatterplotLayer",
-    data=[pickup_point],
-    get_position="coordinates",
-    get_color="color",
-    get_radius=300,
+# Create the map centered on the average of pickup and dropoff
+m = folium.Map(
+    location=[(pickup_latitude + dropoff_latitude) / 2, (pickup_longitude + dropoff_longitude) / 2],
+    zoom_start=10,
+    tiles="https://tiles.stadiamaps.com/styles/osm_bright/{z}/{x}/{y}{r}.png",
+    attr='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
 )
 
-layer2 = pdk.Layer(
-    "ScatterplotLayer",
-    data=[dropoff_point],
-    get_position="coordinates",
-    get_color="color",
-    get_radius=300,
-    pickable=True
-)
+# Add pickup and dropoff markers
+folium.Marker(
+    location=[pickup_latitude, pickup_longitude],
+    icon=folium.Icon(color="red", icon="car", prefix="fa"),
+    popup="Pickup point"
+).add_to(m)
 
-# Création de la couche pour la ligne pointillée
-line_layer = pdk.Layer(
-    "PathLayer",
-    data=[
-        {
-            "path": [pickup, dropoff],  # Liste des coordonnées
-            "color": [0, 0, 0],  # Couleur orange (RGB)
-        }
-    ],
-    get_path="path",
-    get_color="color",
-    width_scale=5,  # Épaisseur de la ligne
-    width_min_pixels=2,
-    get_width=1,
-    pickable=True,
-    # Style pointillé
-    dashed=True,  # Active le style pointillé
-    dash_length=0.1,  # Longueur des tirets
-    dash_gap=1,  # Espace entre les tirets
-)
+folium.Marker(
+    location=[dropoff_latitude, dropoff_longitude],
+    icon=folium.Icon(color="blue", icon="car", prefix="fa"),
+    popup="Dropoff point"
+).add_to(m)
 
-# Config the default view
-view_state = pdk.ViewState(
-    latitude=40.7,
-    longitude=-73.9,
-    zoom=10,
-)
+# Add a dashed line between pickup and dropoff
+folium.PolyLine(
+    locations=[[pickup_latitude, pickup_longitude], [dropoff_latitude, dropoff_longitude]],
+    color="black",
+    weight=3,
+    dash_array="5, 5",
+    opacity=0.8
+).add_to(m)
 
-# Creating the map
-r = pdk.Deck(layers=[layer1, layer2, line_layer], initial_view_state=view_state,
-             map_style="https://tiles.stadiamaps.com/styles/osm_bright.json")
-
-# display
-st.pydeck_chart(r, width="stretch", height=600)
+# Display the map
+st_folium(m, width=700, height=500)
 
 
 #number of passengers
