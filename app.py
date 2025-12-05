@@ -2,9 +2,37 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 import requests
-import json
 
-st.title('TaxiFare Lou-SdC')
+long = -74.1
+lat = 40.6
+
+# Fonction pour géocoder une adresse avec Nominatim
+def geocode_address(address):
+    base_url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "q": address,
+        "format": "json",
+        "limit": 1
+    }
+    headers = {
+        "User-Agent": "TaxiFareApp/1.0"  # Obligatoire pour Nominatim
+    }
+    response = requests.get(base_url, params=params, headers=headers)
+    if response.status_code == 200 and response.json():
+        data = response.json()[0]
+        return float(data["lat"]), float(data["lon"])
+    else:
+        return long, lat
+
+
+# Configuration de la page
+st.set_page_config(
+    page_title="TaxiFare Predict Service",
+    page_icon="🚗",
+    layout="centered"
+)
+
+st.title('TaxiFare Predict Service')
 
 st.markdown('''This app gives you a prediction of the fare for a cab ride between a pickup point
             and a dropoff point at a given date and time and for a given number of passenger''')
@@ -15,18 +43,37 @@ pickup_datetime = st.datetime_input('Input the pickup date and time')
 
 #pickup and dropoff
 
+# coordinates initialisation
+pickup_longitude = -74.1
+pickup_latitude = 40.6
+dropoff_longitude = -74.0
+dropoff_latitude = 40.7
+
+
 # Make two columns
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('### 🚗 Choose your pickup coordinates (red car dot)')
-    pickup_longitude = st.number_input('Set your pickup longitude', value=-74.0, min_value=-74.3, max_value=-73.7)
-    pickup_latitude = st.number_input('Set your pickup latitude', value=40.6, min_value=40.5, max_value=40.9)
+    st.markdown('### 🚗 Choose your pickup adress or coordinates (red car dot)')
+    # adress field
+    pickup_address = st.text_input("Choose an address (ex: 200 Eastern Pkwy, Brooklyn)", value="200 Eastern Pkwy, Brooklyn")
+    pickup_latitude, pickup_longitude = geocode_address(pickup_address)
+
+    st.markdown('or set up the coordinates manually')
+    pickup_longitude = st.number_input('Set your pickup longitude', value=pickup_longitude, min_value=-74.3, max_value=-73.7)
+    pickup_latitude = st.number_input('Set your pickup latitude', value=pickup_latitude, min_value=40.5, max_value=40.9)
+
 
 with col2:
-    st.markdown('### 🚙 Choose your dropoff coordinates (blue car dot)')
-    dropoff_longitude = st.number_input('Set your dropoff longitude', value=-73.9, min_value=-74.3, max_value=-73.7)
-    dropoff_latitude = st.number_input('Set your dropoff latitude', value=40.7, min_value=40.5, max_value=40.9)
+    st.markdown('### 🚙 Choose your dropoff address or coordinates (blue car dot)')
+    dropoff_address = st.text_input("Choose an address (ex: 89 E 42nd St, New York)", value="89 E 42nd St, New York")
+    dropoff_latitude, dropoff_longitude = geocode_address(dropoff_address)
+
+    st.markdown('or set up the coordinates manually')
+    dropoff_longitude = st.number_input('Set your dropoff longitude', value=dropoff_longitude, min_value=-74.3, max_value=-73.7)
+    dropoff_latitude = st.number_input('Set your dropoff latitude', value=dropoff_latitude, min_value=40.5, max_value=40.9)
+
+
 
 # Create the map centered on the average of pickup and dropoff
 m = folium.Map(
