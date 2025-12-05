@@ -1,0 +1,3 @@
+#which packages are going to be useful for our frontend app
+
+streamlit
