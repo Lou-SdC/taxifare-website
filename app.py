@@ -3,7 +3,7 @@ import folium
 from streamlit_folium import st_folium
 import requests
 
-# Fond beige clair pour l'application
+#beige background
 st.markdown(
     """
     <style>
@@ -15,7 +15,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Fonction pour géocoder une adresse avec Nominatim
+# function to geocode an address with Nominatim
 def geocode_address(address):
     base_url = "https://nominatim.openstreetmap.org/search"
     params = {
@@ -34,7 +34,7 @@ def geocode_address(address):
         return None, None
 
 
-# Configuration de la page
+# page configuration
 st.set_page_config(
     page_title="TaxiFare Predict Service",
     page_icon="🚗",
@@ -49,6 +49,7 @@ st.markdown('''This app gives you a prediction of the fare for a cab ride betwee
 #Date and time
 st.markdown('### Set your pickup date and time')
 pickup_datetime = st.datetime_input('Input the pickup date and time')
+
 
 #pickup and dropoff
 
