@@ -88,7 +88,7 @@ r = pdk.Deck(layers=[layer1, layer2, line_layer], initial_view_state=view_state,
              map_style="https://tiles.stadiamaps.com/styles/osm_bright.json")
 
 # display
-st.pydeck_chart(r)
+st.pydeck_chart(r, use_container_width=True, height=600)
 
 
 #number of passengers
