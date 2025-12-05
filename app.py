@@ -6,6 +6,18 @@ import requests
 long = -74.1
 lat = 40.6
 
+# Fond beige clair pour l'application
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #FFF8D6;  /* Couleur beige clair */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Fonction pour géocoder une adresse avec Nominatim
 def geocode_address(address):
     base_url = "https://nominatim.openstreetmap.org/search"
